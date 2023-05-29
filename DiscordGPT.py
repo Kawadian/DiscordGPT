@@ -22,13 +22,17 @@ async def on_message(message):
     if message.channel.id in target_channel_ids or client.user in message.mentions or isinstance(message.channel, discord.DMChannel):
         # メンションの部分を削除
         question = message.content.replace(f'<@!{client.user.id}>', '').strip()
-
+        question = f'"{question}"'
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
                     "role": "system",
                     "content": "日本語で応答してください"
+                },
+                {
+                    "role": "system",
+                    "content": "カジュアルに応答してください"
                 },
                 {
                     "role": "user",
