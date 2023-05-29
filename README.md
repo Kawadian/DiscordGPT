@@ -1,0 +1,2 @@
+# DiscordGPT
+Discord上でChatGPTを使用するためのPythonスクリプトです。
