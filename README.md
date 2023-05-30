@@ -1,10 +1,8 @@
 ## WithHistoryとの違い
 
-DiscordGPT.pyとDiscordGPT_WithHistory.pyの違いは、直近の会話をAIが参照するか否かの違いです。
-
-参照することで過去の会話に関連した返答をすることができますが、token数が多くなります。
-
-また、DiscordGPT_WithHistory.pyの方は時々エラーが発生するため、安定しているとは言い切れません。ご注意ください。
+DiscordGPT.pyとDiscordGPT_WithHistory.pyの違いは、直近の会話をAIが参照するか否かの違いです。<br>
+参照することで過去の会話に関連した返答をすることができますが、token数が多くなります。<br>
+また、DiscordGPT_WithHistory.pyの方は時々エラーが発生するため、安定しているとは言い切れません。ご注意ください。<br>
 
 ## DiscordでChatGPTを使用するためのPythonスクリプトの使い方
 
