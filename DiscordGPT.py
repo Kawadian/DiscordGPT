@@ -51,9 +51,15 @@ async def on_message(message):
         async with message.channel.typing():
             # Fetch OpenAI response in a separate thread
             loop = asyncio.get_running_loop()
-            response = await loop.run_in_executor(executor, fetch_openai_response, message_history, question)
-
-        chat_results = response["choices"][0]["message"]["content"]
-        await message.channel.send(chat_results)
-
+            try:
+                response = await loop.run_in_executor(executor, fetch_openai_response, message_history, question)
+                chat_results = response["choices"][0]["message"]["content"]
+                await message.channel.send(chat_results)
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                if "This model's maximum context length is" in str(e):
+                    await message.channel.send("トークンの制限を超えています。応答することができません。詳細は以下の通りです\n" + str(e))
+                    return
+                chat_results = "エラーが発生しました。詳細は以下の通りです\n" + str(type(e).__name__)
+                await message.channel.send(chat_results)
 client.run("token")
