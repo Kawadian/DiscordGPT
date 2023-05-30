@@ -21,17 +21,25 @@ async def on_message(message):
     # メンションされた時、またはDMでメッセージが送られた場合、特定のチャンネル内のみ応答
     if message.channel.id in target_channel_ids or client.user in message.mentions or isinstance(message.channel, discord.DMChannel):
         # メンションの部分を削除
-        question = message.content.replace(f'<@!{client.user.id}>', '').strip()
+        question = re.sub(r'<@!?\d+>', '', message.content).strip()
+
+        # メッセージの履歴を取得
+        message_history = []
+        async for msg in message.channel.history(limit=5):  # 送受信履歴の数を指定
+            message_history.append({
+                "role": "assistant" if msg.author == client.user else ("user" if msg.author == message.author else "system"),
+                "content": msg.content
+            })
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=[
+            messages=message_history + [
                 {
                     "role": "system",
                     "content": "日本語で応答してください"
                 },
                 {
                     "role": "user",
-                    "content": f'"{question}"'
+                    "content": question
                 },
             ],
         )
