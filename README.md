@@ -12,7 +12,7 @@
 Pythonが既にインストールされていることを確認します。次に、以下のコマンドを実行して必要なライブラリをインストールします。
 
 ```
-pip install discord.py openai asyncio
+pip install discord.py openai asyncio retry
 ```
 
 ### 使用方法
