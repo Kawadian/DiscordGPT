@@ -1,4 +1,7 @@
-## DiscordでChatGPTを使用するためのPythonスクリプトの使い方（簡単で少人数向け、ハードコードされている方）
+[MariaDBを使用したバージョンのREADMEはこちら](./README.MariaDB.md)
+
+[README in English Using MariaDB Script](./README.MariaDB_en.md)
+## DiscordでChatGPTを使用するためのPythonスクリプトの使い方
 
 このPythonスクリプトは、Discordの特定のチャンネルでメッセージを受信したとき、または直接メッセージやメンションを受信したときに、ChatGPTを利用して自動的に応答します。
 
