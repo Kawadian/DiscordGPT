@@ -3,24 +3,27 @@ import openai
 import re
 import concurrent.futures
 import asyncio
-import os
 import mysql.connector
 from retry import retry
+from openai.error import AuthenticationError
 from mysql.connector import Error
 
-# discordの全てのイベントに対するアクセス権限を持つオブジェクトを生成
+# Generate an object with access rights to all Discord events
 intents = discord.Intents.all()
-# Discordのクライアントオブジェクトを作成
+
+# Create a Discord client object
 client = discord.Client(intents=intents)
-# 同時に実行可能な最大のタスク数を3に設定したスレッドプールを作成
+
+# Create a thread pool that allows a maximum of 3 tasks to be executed simultaneously
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
-# データベースからユーザのトークンを取得する関数
-# データベースへの接続が失敗した場合は2回リトライし、それでも失敗した場合はNoneを返す
+
+# Function to get a user's token from the database
+# If the connection to the database fails, it will retry 2 times, and if it still fails, it will return None
 @retry(Error, tries=2, delay=2)
 def get_token(user_id):
     try:
-        # MySQLに接続
+        # Connect to MySQL
         connection = mysql.connector.connect(
             host='localhost',
             database='discord',
@@ -28,10 +31,10 @@ def get_token(user_id):
             password='password'
         )
 
-        # 接続に成功した場合
+        # If the connection is successful
         if connection.is_connected():
             cursor = connection.cursor()
-            # パラメータ化されたクエリを使って、トークンを取得
+            # Use a parameterized query to get the token
             stmt = "SELECT token FROM tokens WHERE user_id = %s"
             cursor.execute(stmt, (user_id,))
             record = cursor.fetchone()
@@ -42,17 +45,18 @@ def get_token(user_id):
         return None
 
     finally:
-        # データベースからの切断
+        # Disconnect from the database
         if connection.is_connected():
             cursor.close()
             connection.close()
 
-# データベースにユーザのトークンを保存する関数
-# データベースへの接続が失敗した場合は2回リトライする
+
+# Function to save a user's token in the database
+# If the connection to the database fails, it will retry 2 times
 @retry(Error, tries=2, delay=2)
 def save_token(user_id, token):
     try:
-        # MySQLに接続
+        # Connect to MySQL
         connection = mysql.connector.connect(
             host='localhost',
             database='discord',
@@ -60,10 +64,10 @@ def save_token(user_id, token):
             password='password'
         )
 
-        # 接続に成功した場合
+        # If the connection is successful
         if connection.is_connected():
             cursor = connection.cursor()
-            # パラメータ化されたクエリを使って、トークンを保存
+            # Use a parameterized query to save the token
             stmt = "INSERT INTO tokens (user_id, token) VALUES (%s, %s)"
             cursor.execute(stmt, (user_id, token))
             connection.commit()
@@ -72,13 +76,14 @@ def save_token(user_id, token):
         print(f"Error writing data to MySQL table: {e}")
 
     finally:
-        # データベースからの切断
+        # Disconnect from the database
         if connection.is_connected():
             cursor.close()
             connection.close()
 
-# OpenAIから応答を取得する関数
-# API接続エラーが発生した場合は2回リトライする
+
+# Function to get a response from OpenAI
+# If an API connection error occurs, it will retry 2 times
 @retry(openai.error.APIConnectionError, tries=2, delay=2)
 def fetch_openai_response(message_history, question, token):
     openai.api_key = token
@@ -92,38 +97,50 @@ def fetch_openai_response(message_history, question, token):
         ],
     )
 
-# botが準備完了したときに呼び出されるイベントハンドラ
+
+# Print confirmation when client is ready
 @client.event
 async def on_ready():
-    print("on_ready")
+    print("Bot is ready")
     print(discord.__version__)
 
-# メッセージが送信されたときに呼び出されるイベントハンドラ
+
+# Event handler that is called when a message is sent
 @client.event
 async def on_message(message):
-    # メッセージがbotからのものであれば無視
+    # Ignore messages from the bot itself
     if message.author.bot:
-        return 
+        return
 
-    # DMを通じてトークンが送信された場合、トークンを保存
+    # If a token is sent through a DM, save the token
     if isinstance(message.channel, discord.DMChannel):
         if message.content.startswith('token:'):
             token = message.content[6:].strip()
             if token.startswith("sk-"):
-                save_token(message.author.id, token)
-                await message.channel.send("Token has been saved.")
+                try:
+                    # Check if token is valid
+                    response = fetch_openai_response([], "Hello", token)
+                    # If valid, save the token
+                    save_token(message.author.id, token)
+                    await message.channel.send("Token has been updated.")
+                    return
+                except AuthenticationError:
+                    # If token is not valid, send error message
+                    await message.channel.send("Invalid token. Please check your token and try again.")
+                    return
             else:
-                await message.channel.send("Invalid token.")
+                await message.channel.send("Invalid token format. Token must start with 'sk-'")
+                return
 
-    # botにメンションがあった場合、またはDMが送られた場合、OpenAIに問い合わせ
+    # If the bot is mentioned or a DM is sent, contact OpenAI
     if client.user in message.mentions or isinstance(message.channel, discord.DMChannel):
         token = get_token(message.author.id)
         if token:
             question = re.sub(r'<@!?\d+>', '', message.content).strip()
 
-            #メッセージの履歴を取得
+            # Get message history
             message_history = []
-            async for msg in message.channel.history(limit=5):  #過去何件のメッセージを取得するか調整
+            async for msg in message.channel.history(limit=5):  # Adjust how many past messages to get
                 message_history.append({
                     "role": "assistant" if msg.author == client.user else ("user" if msg.author == message.author else "assistant"),
                     "content": msg.content
@@ -137,13 +154,10 @@ async def on_message(message):
                     await message.channel.send(chat_results)
                 except Exception as e:
                     print(f"Unexpected error: {e}")
-                    if "This model's maximum context length is" in str(e):
-                        await message.channel.send("Token limit exceeded. Unable to respond. Details are as follows.\n" + str(e))
-                        return
                     chat_results = "An error has occurred. Details are as follows.\n" + str(type(e).__name__)
                     await message.channel.send(chat_results)
         else:
             await message.channel.send("You must first register an OpenAI token. Send a DM with 'token:your-token-here'.")
-
-# botを起動
-client.run("discord_token")
+            
+# Launch the bot
+client.run("discord_bot_token")
