@@ -3,13 +3,15 @@ import openai
 import re
 import concurrent.futures
 import asyncio
+from retry import retry
 
-openai.api_key = 'token'
+openai.api_key = 'openai_api_token'
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
+@retry(openai.error.APIConnectionError, tries=2, delay=2)
 def fetch_openai_response(message_history, question):
     return openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
@@ -25,6 +27,15 @@ def fetch_openai_response(message_history, question):
         ],
     )
 
+async def get_message_history(channel, limit, current_message):
+    message_history = []
+    async for msg in channel.history(limit=limit):  
+        message_history.append({
+            "role": "system" if msg.author == client.user else ("user" if msg.author == current_message.author else "assistant"),
+            "content": msg.content
+        })
+    return message_history
+
 @client.event
 async def on_ready():
     print("on_ready")
@@ -35,21 +46,11 @@ async def on_message(message):
     if message.author.bot:
         return 
 
-    # メンションされた時、またはDMでメッセージが送られた場合のみ応答
     if client.user in message.mentions or isinstance(message.channel, discord.DMChannel):
-        # メンションの部分を削除
         question = re.sub(r'<@!?\d+>', '', message.content).strip()
-        # Get message history
-        message_history = []
-        async for msg in message.channel.history(limit=5):  # Change the limit as needed
-            message_history.append({
-                "role": "system" if msg.author == client.user else ("user" if msg.author == message.author else "assistant"),
-                "content": msg.content
-            })
+        message_history = await get_message_history(message.channel, limit=5, current_message=message)
 
-        # Show typing status
         async with message.channel.typing():
-            # Fetch OpenAI response in a separate thread
             loop = asyncio.get_running_loop()
             try:
                 response = await loop.run_in_executor(executor, fetch_openai_response, message_history, question)
@@ -62,4 +63,5 @@ async def on_message(message):
                     return
                 chat_results = "エラーが発生しました。詳細は以下の通りです\n" + str(type(e).__name__)
                 await message.channel.send(chat_results)
-client.run("token")
+
+client.run("discord_token")
