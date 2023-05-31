@@ -90,7 +90,7 @@ That completes the creation of the database, user, and table.
 
 - The bot sends user queries to the OpenAI API. Therefore, OpenAI API usage fees apply. Also, because user queries are sent to OpenAI, please be careful not to send queries that contain confidential information.
 
-- This code is for learning and experimentation and is not recommended for commercial use. If considering commercial use, you need to implement appropriate security measures and error handling.
+- This code is intended for learning and experimentation purposes, and it is not recommended for commercial use. If you consider using it for commercial purposes, you should implement appropriate security measures and error handling. Additionally, I cannot take any responsibility for any damages that may occur as a result of using this code. (I don't think there would be anyone using code written by a humanities college student as a hobby for commercial purposes, though.)
 
 ## License
 
