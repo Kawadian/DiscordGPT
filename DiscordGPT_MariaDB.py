@@ -17,28 +17,30 @@ client = discord.Client(intents=intents)
 # Create a thread pool that allows a maximum of 3 tasks to be executed simultaneously
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
+# Database configuration
+db_config = {
+    "host": "localhost",
+    "database": "discord",
+    "user": "discorduser",
+    "password": "password"
+}
+
 
 # Function to get a user's token from the database
 # If the connection to the database fails, it will retry 2 times, and if it still fails, it will return None
 @retry(Error, tries=2, delay=2)
 def get_token(user_id):
+    connection = None
     try:
         # Connect to MySQL
-        connection = mysql.connector.connect(
-            host='localhost',
-            database='discord',
-            user='discorduser',
-            password='password'
-        )
+        connection = mysql.connector.connect(**db_config)
 
-        # If the connection is successful
-        if connection.is_connected():
-            cursor = connection.cursor()
-            # Use a parameterized query to get the token
-            stmt = "SELECT token FROM tokens WHERE user_id = %s"
-            cursor.execute(stmt, (user_id,))
-            record = cursor.fetchone()
-            return record[0] if record else None
+        cursor = connection.cursor()
+        # Use a parameterized query to get the token
+        stmt = "SELECT token FROM tokens WHERE user_id = %s"
+        cursor.execute(stmt, (user_id,))
+        record = cursor.fetchone()
+        return record[0] if record else None
 
     except Error as e:
         print(f"Error reading data from MySQL table: {e}")
@@ -46,7 +48,7 @@ def get_token(user_id):
 
     finally:
         # Disconnect from the database
-        if connection.is_connected():
+        if connection and connection.is_connected():
             cursor.close()
             connection.close()
 
@@ -55,32 +57,49 @@ def get_token(user_id):
 # If the connection to the database fails, it will retry 2 times
 @retry(Error, tries=2, delay=2)
 def save_token(user_id, token):
+    connection = None
     try:
         # Connect to MySQL
-        connection = mysql.connector.connect(
-            host='localhost',
-            database='discord',
-            user='discorduser',
-            password='password'
-        )
+        connection = mysql.connector.connect(**db_config)
 
-        # If the connection is successful
-        if connection.is_connected():
-            cursor = connection.cursor()
-            # Use a parameterized query to save the token
-            stmt = "INSERT INTO tokens (user_id, token) VALUES (%s, %s)"
-            cursor.execute(stmt, (user_id, token))
-            connection.commit()
+        cursor = connection.cursor()
+        # Use a parameterized query to save the token
+        stmt = "INSERT INTO tokens (user_id, token) VALUES (%s, %s)"
+        cursor.execute(stmt, (user_id, token))
+        connection.commit()
 
     except Error as e:
         print(f"Error writing data to MySQL table: {e}")
 
     finally:
         # Disconnect from the database
-        if connection.is_connected():
+        if connection and connection.is_connected():
             cursor.close()
             connection.close()
 
+# Function to delete a user's token from the database
+# If the connection to the database fails, it will retry 2 times
+@retry(Error, tries=2, delay=2)
+def delete_token(user_id):
+    connection = None
+    try:
+        # Connect to MySQL
+        connection = mysql.connector.connect(**db_config)
+
+        cursor = connection.cursor()
+        # Use a parameterized query to delete the token
+        stmt = "DELETE FROM tokens WHERE user_id = %s"
+        cursor.execute(stmt, (user_id,))
+        connection.commit()
+
+    except Error as e:
+        print(f"Error deleting data from MySQL table: {e}")
+
+    finally:
+        # Disconnect from the database
+        if connection and connection.is_connected():
+            cursor.close()
+            connection.close()
 
 # Function to get a response from OpenAI
 # If an API connection error occurs, it will retry 2 times
@@ -112,7 +131,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    # If a token is sent through a DM, save the token
+    # If a token is sent through a DM, save or delete the token
     if isinstance(message.channel, discord.DMChannel):
         if message.content.startswith('token:'):
             token = message.content[6:].strip()
@@ -122,7 +141,7 @@ async def on_message(message):
                     response = fetch_openai_response([], "Hello", token)
                     # If valid, save the token
                     save_token(message.author.id, token)
-                    await message.channel.send("Token has been updated.")
+                    await message.channel.send('Token has been updated. To delete a token, send "delete token".')
                     return
                 except AuthenticationError:
                     # If token is not valid, send error message
@@ -131,6 +150,11 @@ async def on_message(message):
             else:
                 await message.channel.send("Invalid token format. Token must start with 'sk-'")
                 return
+
+        elif message.content.lower() == 'delete token':
+            delete_token(message.author.id)
+            await message.channel.send("Your token has been deleted.")
+            return
 
     # If the bot is mentioned or a DM is sent, contact OpenAI
     if client.user in message.mentions or isinstance(message.channel, discord.DMChannel):
