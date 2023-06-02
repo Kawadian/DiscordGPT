@@ -2,13 +2,16 @@ version: '3.1'
 
 services:
 
-  discord_bot:
-    build: .
-    environment:
-      - DISCORD_BOT_TOKEN=your_discord_bot_token_here
-    depends_on:
-      - db
-
+bot:
+  build: .
+  volumes:
+    - .:/app
+  depends_on:
+    - db
+  env_file:
+    - .env
+  restart: always
+  
 db:
     image: mariadb:10.5
     volumes:

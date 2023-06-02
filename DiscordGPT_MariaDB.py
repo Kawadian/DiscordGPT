@@ -1,13 +1,13 @@
 import discord
 import openai
 import re
-import os
 import concurrent.futures
 import asyncio
 import mysql.connector
 from retry import retry
 from openai.error import AuthenticationError
 from mysql.connector import Error
+import os
 
 # Generate an object with access rights to all Discord events
 intents = discord.Intents.all()
@@ -18,6 +18,11 @@ client = discord.Client(intents=intents)
 # Create a thread pool that allows a maximum of 3 tasks to be executed simultaneously
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
+# Retrieve the Discord bot token from the environment variable
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+if not DISCORD_BOT_TOKEN:
+    raise Exception("Please set the DISCORD_BOT_TOKEN environment variable.")
+
 # Database configuration
 db_config = {
     "host": "db",
@@ -25,6 +30,7 @@ db_config = {
     "user": "discorduser",
     "password": "password"
 }
+
 
 
 # Function to get a user's token from the database
@@ -186,8 +192,5 @@ async def on_message(message):
             
 # Launch the bot
 discord_bot_token = os.getenv('DISCORD_BOT_TOKEN')  # 環境変数から取得
-if discord_bot_token is None:
-    print("Please set the DISCORD_BOT_TOKEN environment variable.")
-    exit(1)
 
 client.run(discord_bot_token)
