@@ -1,6 +1,9 @@
 [MariaDBを使用したバージョンのREADMEはこちら](./README.MariaDB.md)
 
 [README in English Using MariaDB Script](./README.MariaDB_en.md)
+
+## 注意！！ 現在のDockerfileではは正しく機能しません。構築する際は直接起動させてください！！
+## Attention!! It doesn't work correctly with the current Dockerfile. Please start it directly when you build it!!
 ## DiscordでChatGPTを使用するためのPythonスクリプトの使い方
 
 このPythonスクリプトは、Discordの特定のチャンネルでメッセージを受信したとき、または直接メッセージやメンションを受信したときに、ChatGPTを利用して自動的に応答します。
