@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS tokens (
+    user_id BIGINT NOT NULL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL
+);

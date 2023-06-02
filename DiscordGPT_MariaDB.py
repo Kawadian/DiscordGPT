@@ -1,6 +1,7 @@
 import discord
 import openai
 import re
+import os
 import concurrent.futures
 import asyncio
 import mysql.connector
@@ -19,7 +20,7 @@ executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
 # Database configuration
 db_config = {
-    "host": "localhost",
+    "host": "db",
     "database": "discord",
     "user": "discorduser",
     "password": "password"
@@ -184,4 +185,9 @@ async def on_message(message):
             await message.channel.send("You must first register an OpenAI token. Send a DM with 'token:your-token-here'.")
             
 # Launch the bot
-client.run("discord_bot_token")
+discord_bot_token = os.getenv('DISCORD_BOT_TOKEN')  # 環境変数から取得
+if discord_bot_token is None:
+    print("Please set the DISCORD_BOT_TOKEN environment variable.")
+    exit(1)
+
+client.run(discord_bot_token)
