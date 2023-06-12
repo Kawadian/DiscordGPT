@@ -2,49 +2,44 @@
 
 [README in English Using MariaDB Script](./UseDB/README.MariaDB_en.md)
 
-## 注意！！ 現在のDockerfileでは正しく機能しません。構築する際は直接起動させてください！！
-## Attention!! It doesn't work correctly with the current Dockerfile. Please start it directly when you build it!!
 ## DiscordでChatGPTを使用するためのPythonスクリプトの使い方
 
-このPythonスクリプトは、Discordの特定のチャンネルでメッセージを受信したとき、または直接メッセージやメンションを受信したときに、ChatGPTを利用して自動的に応答します。
+このPythonスクリプトは、直接メッセージを受信した時、またはメンションされたときに、ChatGPTを利用して自動的に応答します。<br>
+また、過去5件のメッセージを参照しているので、継続的な会話にも対応します。
 
 ### 必要なもの
 - Python3
 - Discordボットのトークン
 - OpenAIのAPIキー
 
-### インストール
+## インストール
 
-Pythonが既にインストールされていることを確認します。次に、以下のコマンドを実行して必要なライブラリをインストールします。
+1. リポジトリをクローンします：
 
-```
-pip install discord.py openai asyncio retry
-```
+    ```bash
+    git clone https://github.com/Kawadian/DiscordGPT.git
+    ```
 
-### 使用方法
+2. リポジトリのディレクトリに移動します：
 
-1. まず、Discord botとOpenAIのAPIキーを取得します。
+    ```bash
+    cd ./DiscordGPT
+    ```
 
-2. .example.envを参考に、DiscordBotのトークンと、OpenAIのトークンを記述してください。
+3. 環境変数を設定します：
 
-   ```.env
-   DISCORD_BOT_TOKEN=your_discord_bot_token_here
-   OPENAI_API_TOKEN=your_openai_api_token_here
-   ```
+    `.env`ファイルを作成し、以下の形式でDiscordのボットトークンを設定します：
 
-3. `target_channel_ids` のリストに、監視したいDiscordチャンネルのIDを追加します。
+    ```
+    DISCORD_BOT_TOKEN=your_discord_bot_token_here
+    OPENAI_API_TOKEN=your_openai_api_token_here
+    ```
 
-   ```python
-   target_channel_ids = [12345, 67890, 12345]
-   ```
+4. Dockerイメージをビルドし、コンテナを起動します：
 
-4. すべての設定が完了したら、Pythonスクリプトを実行します。
-
-   ```
-   python your-script.py
-   ```
-
-ボットが起動したら、指定されたDiscordチャンネルでメッセージを送信するか、ボットに直接メッセージを送信するか、メンションすると、自動的に応答します。注意すべき点として、ボットは他のボットからのメッセージには応答しません。
+    ```bash
+    docker-compose up
+    ```
 
 ### 注意事項
 

@@ -1,4 +1,4 @@
-discord.py
-openai
-mysql-connector-python
-retry
+discord==2.2.3
+openai==0.27.0
+retry==0.9.2
+python-dotenv==0.19.1

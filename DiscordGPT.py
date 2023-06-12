@@ -1,9 +1,11 @@
+import os
 import discord
 import openai
 import re
 import concurrent.futures
 import asyncio
 from retry import retry
+from dotenv import load_dotenv
 
 token = os.getenv('DISCORD_BOT_TOKEN')
 openai.api_key = os.getenv('OPENAI_API_TOKEN')
