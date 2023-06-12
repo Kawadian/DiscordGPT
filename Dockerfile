@@ -18,4 +18,4 @@ ADD . /discord_bot/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run bot.py when the container launches
-CMD ["python", "DiscordGPT_MariaDB.py"]
+CMD ["python", "DiscordGPT.py"]

@@ -5,7 +5,8 @@ import concurrent.futures
 import asyncio
 from retry import retry
 
-openai.api_key = 'openai_api_token'
+token = os.getenv('DISCORD_BOT_TOKEN')
+openai.api_key = os.getenv('OPENAI_API_TOKEN')
 
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
@@ -16,10 +17,6 @@ def fetch_openai_response(message_history, question):
     return openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=message_history + [
-            {
-                "role": "system",
-                "content": "日本語で応答してください"
-            },
             {
                 "role": "user",
                 "content": question
@@ -64,4 +61,4 @@ async def on_message(message):
                 chat_results = "エラーが発生しました。詳細は以下の通りです\n" + str(type(e).__name__)
                 await message.channel.send(chat_results)
 
-client.run("discord_token")
+client.run(token)

@@ -11,15 +11,6 @@ bot:
   env_file:
     - .env
   restart: always
-  
-db:
-    image: mariadb:10.5
-    volumes:
-      - db_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: discord
-      MYSQL_USER: discorduser
-      MYSQL_PASSWORD: password
-    restart: always
+      environment:
+      DISCORD_BOT_TOKEN:
+      OPENAI_API_TOKEN:

@@ -25,11 +25,11 @@ pip install discord.py openai asyncio retry
 
 1. まず、Discord botとOpenAIのAPIキーを取得します。
 
-2. Pythonスクリプトに、Discord botのトークンとOpenAIのAPIキーを記入します。
+2. .example.envを参考に、DiscordBotのトークンと、OpenAIのトークンを記述してください。
 
-   ```python
-   openai.api_key = 'your-openai-api-key' 
-   client.run("your-discord-bot-token")
+   ```.env
+   DISCORD_BOT_TOKEN=your_discord_bot_token_here
+   OPENAI_API_TOKEN=your_openai_api_token_here
    ```
 
 3. `target_channel_ids` のリストに、監視したいDiscordチャンネルのIDを追加します。
