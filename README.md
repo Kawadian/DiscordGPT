@@ -1,6 +1,6 @@
-[MariaDBを使用したバージョンのREADMEはこちら](./README.MariaDB.md)
+[MariaDBを使用したバージョンのREADMEはこちら](./UseDB/README.MariaDB.md)
 
-[README in English Using MariaDB Script](./README.MariaDB_en.md)
+[README in English Using MariaDB Script](./UseDB/README.MariaDB_en.md)
 
 ## 注意！！ 現在のDockerfileでは正しく機能しません。構築する際は直接起動させてください！！
 ## Attention!! It doesn't work correctly with the current Dockerfile. Please start it directly when you build it!!
