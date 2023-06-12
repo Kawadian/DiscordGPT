@@ -1,3 +1,4 @@
+import os
 import discord
 import openai
 import re
@@ -7,6 +8,10 @@ import mysql.connector
 from retry import retry
 from openai.error import AuthenticationError
 from mysql.connector import Error
+from dotenv import load_dotenv
+
+#Set DiscordBot Token
+token = os.getenv('DISCORD_BOT_TOKEN')
 
 # Generate an object with access rights to all Discord events
 intents = discord.Intents.all()
@@ -19,11 +24,17 @@ executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
 # Database configuration
 db_config = {
-    "host": "localhost",
+    "host": "db",
     "database": "discord",
     "user": "discorduser",
     "password": "password"
 }
+
+# Print confirmation when client is ready
+@client.event
+async def on_ready():
+    print("Bot is ready")
+    print(discord.__version__)
 
 
 # Function to get a user's token from the database
@@ -116,14 +127,6 @@ def fetch_openai_response(message_history, question, token):
         ],
     )
 
-
-# Print confirmation when client is ready
-@client.event
-async def on_ready():
-    print("Bot is ready")
-    print(discord.__version__)
-
-
 # Event handler that is called when a message is sent
 @client.event
 async def on_message(message):
@@ -184,4 +187,4 @@ async def on_message(message):
             await message.channel.send("You must first register an OpenAI token. Send a DM with 'token:your-token-here'.")
             
 # Launch the bot
-client.run("discord_bot_token")
+client.run(token)
