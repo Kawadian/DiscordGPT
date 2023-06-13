@@ -1,26 +1,28 @@
-version: '3.8'
-
+version: '3'
 services:
   db:
     image: mariadb:10.5
-    restart: always
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: discord
       MYSQL_USER: discorduser
       MYSQL_PASSWORD: password
-    volumes:
-      - db_data:/var/lib/mysql
+    networks:
+      - app-network
 
-  bot:
+  app:
     build: .
-    command: python DiscordGPT_DB.py
     volumes:
-      - .:/usr/src/app
+      - .:/app
     depends_on:
       - db
+    networks:
+      - app-network
     environment:
       DISCORD_BOT_TOKEN:
 
-volumes:
-  db_data: {}
+networks:
+  app-network:
+    driver: bridge
