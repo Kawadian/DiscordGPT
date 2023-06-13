@@ -30,13 +30,6 @@ db_config = {
     "password": "password"
 }
 
-# Print confirmation when client is ready
-@client.event
-async def on_ready():
-    print("Bot is ready")
-    print(discord.__version__)
-
-
 # Function to get a user's token from the database
 # If the connection to the database fails, it will retry 2 times, and if it still fails, it will return None
 @retry(Error, tries=2, delay=2)
@@ -126,6 +119,12 @@ def fetch_openai_response(message_history, question, token):
             },
         ],
     )
+
+# Print confirmation when client is ready
+@client.event
+async def on_ready():
+    print("Bot is ready")
+    print(discord.__version__)
 
 # Event handler that is called when a message is sent
 @client.event
