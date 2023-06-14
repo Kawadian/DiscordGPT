@@ -44,7 +44,7 @@ The creation of the Discord bot is omitted here.
 
 ## Usage
 
-When you mention the bot on Discord or send a DM to the bot, it generates a response through the OpenAI API. If you are using it for the first time, you need to set up your OpenAI API token by sending a DM to the bot.
+When you mention the bot on Discord or send a DM to the bot, it generates a response through the OpenAI API. If you are using it for the first time, you need to set up your OpenAI API token by using a slash command "/save_token" to the bot.
 
 ## Database
 

@@ -1,28 +1,39 @@
-version: '3'
+version: '3.1'
+
 services:
   db:
     image: mariadb:10.5
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: discord
-      MYSQL_USER: discorduser
-      MYSQL_PASSWORD: password
+      MYSQL_HOST: 
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_DATABASE: 
+      MYSQL_USER: 
+      MYSQL_PASSWORD: 
+    env_file:
+      - .env
     networks:
       - app-network
 
-  app:
+  discord_bot:
     build: .
-    volumes:
-      - .:/app
+    restart: always
+    environment:
+      DISCORD_BOT_TOKEN: 
+      MYSQL_HOST: 
+      MYSQL_DATABASE: 
+      MYSQL_USER: 
+      MYSQL_PASSWORD: 
+    env_file:
+      - .env
     depends_on:
       - db
     networks:
       - app-network
-    environment:
-      DISCORD_BOT_TOKEN:
-
+      
 networks:
   app-network:
     driver: bridge
