@@ -73,18 +73,18 @@ async def _token_save(ctx: SlashContext, token: str):
             openai.api_key = token  # スラッシュコマンドから提供されたトークンを直接使用
             openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": "Hello"}])
             db_operations.save_token(str(ctx.author_id), token)
-            await ctx.send('Token has been updated.')
+            await ctx.send(f'Token has been updated.', hidden=True)
         except Exception as e:
-            await ctx.send('Invalid token. Please check your token and try again.')
+            await ctx.send(f'Invalid token. Please check your token and try again.', hidden=True)
     else:
-        await ctx.send("Invalid token format. Token must start with 'sk-'")
+        await ctx.send(f"Invalid token format. Token must start with 'sk-'", hidden=True)
 
 @slash.slash(
     name="delete_token",
     description="Delete OpenAI token.")
 async def _token_delete(ctx: SlashContext):
     db_operations.delete_token(str(ctx.author_id))
-    await ctx.send("Your token has been deleted.")
+    await ctx.send(f"Your token has been deleted.", hidden=True)
 
 @slash.slash(
     name="set_model",
