@@ -1,5 +1,6 @@
-discord==2.2.3
 openai==0.27.0
 mysql-connector-python==8.0.26
 retry==0.9.2
 python-dotenv==0.19.1
+discord-py-slash-command==2.0.0
+discord.py==1.7.3
