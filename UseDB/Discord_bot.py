@@ -122,21 +122,22 @@ async def on_message(message):
         # Check if the user's API key is registered
         api_key = db_operations.get_token(message.author.id)
         if not api_key:
-            await message.channel.send("APIキーが登録されていません。APIキーを登録してから再度お試しください。")
+            await message.channel.send("The API key is not registered. Please use '/save_token' to register the API key and try again.")
             return
 
         async with message.channel.typing():
             loop = asyncio.get_running_loop()
             try:
                 response = await loop.run_in_executor(executor, fetch_openai_response, message.author.id, model, message_history, question)
-                chat_results = response["choices"][0]["message"]["content"] + "by \n" + model
+                chat_results = response["choices"][0]["message"]["content"] + "\n" + "by " + model
                 await message.channel.send(chat_results)
             except Exception as e:
                 print(f"Unexpected error: {e}")
                 if "This model's maximum context length is" in str(e):
-                    await message.channel.send("トークンの制限を超えています。応答することができません。詳細は以下の通りです\n" + str(e))
+                    await message.channel.send("Token limit has been exceeded. Unable to respond. Here are the details\n" + str(e))
                     return
-                chat_results = "エラーが発生しました。詳細は以下の通りです\n" + str(type(e).__name__)
+                chat_results = "An error has occurred. Here are the details\n" + str(type(e).__name__)
                 await message.channel.send(chat_results)
+
 # Launch the bot
 client.run(discord_token)
