@@ -37,7 +37,7 @@ def fetch_openai_response(user_id, model, message_history, question):
       response = openai.Completion.create(
           engine=model,
           prompt=question,
-          max_tokens=8000
+          max_tokens=2500
       )
       return {"choices": [{"message": {"content": response.choices[0].text.replace('\n', '')}}]}
   
