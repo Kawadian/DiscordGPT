@@ -11,6 +11,8 @@ import concurrent.futures
 import asyncio
 from retry import retry
 from dotenv import load_dotenv
+import docx
+from PyPDF2 import PdfReader
 import db_operations
 
 load_dotenv()
@@ -121,10 +123,23 @@ async def _token_delete(ctx: SlashContext):
     ]
 )
 async def _model(ctx, model: str): 
-    print(f"Received command to change model to {model} for user {ctx.author_id}")  # Add this line
+    print(f"Received command to change model to {model} for user {ctx.author_id}")
     db_operations.save_model(ctx.author_id, model)
     await ctx.send(f"Model changed to {model}", hidden=True)
 
+#File judgment processing
+async def read_file(attachment):
+    file = await attachment.to_file()
+    fp = file.fp
+    if attachment.filename.endswith('.docx'):
+        doc = docx.Document(fp)
+        return ' '.join(paragraph.text for paragraph in doc.paragraphs)
+    elif attachment.filename.endswith('.pdf'):
+        reader = PdfReader(fp)
+        return ' '.join(page.extract_text() for page in reader.pages)
+    else:
+        return fp.read().decode('utf-8')
+    
 @client.event
 async def on_message(message):
     if message.author.bot:
@@ -135,8 +150,7 @@ async def on_message(message):
         if message.attachments:
             # Handle the first attachment
             attachment = message.attachments[0]
-            file = await attachment.to_file()
-            file_text = file.fp.read().decode('utf-8')
+            file_text = await read_file(attachment)
 
         question = re.sub(r'<@!?\d+>', '', message.content).strip()
 
@@ -146,12 +160,6 @@ async def on_message(message):
 
         message_history = await get_message_history(message.channel, limit=5, current_message=message)
         model = db_operations.get_model(message.author.id) or "gpt-3.5-turbo"
-
-        # Check if the user's API key is registered
-        api_key = db_operations.get_token(message.author.id)
-        if not api_key:
-            await message.channel.send("Your API key is not registered. Please use '/save_token' to register your API key before trying again.")
-            return
 
         async with message.channel.typing():
             loop = asyncio.get_running_loop()
