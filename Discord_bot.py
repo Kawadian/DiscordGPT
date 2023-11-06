@@ -113,10 +113,10 @@ async def _token_delete(ctx: SlashContext):
             choices=[
                 create_choice(name="gpt-3.5-turbo", value="gpt-3.5-turbo"),     
                 create_choice(name="gpt-3.5-turbo-16k", value="gpt-3.5-turbo-16k"),   
+                create_choice(name="gpt-4-1106-preview", value="gpt-4-1106-preview"),  
                 create_choice(name="gpt-4", value="gpt-4"),    
                 create_choice(name="gpt-4-32k", value="gpt-4-32k"),
                 create_choice(name="text-davinci-003", value="text-davinci-003"),
-                create_choice(name="code-davinci-002", value="code-davinci-002"),
                 # Add more models as desired
             ]
         )
